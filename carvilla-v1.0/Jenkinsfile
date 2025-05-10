@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_CRE = credentials('docker-hub')
+    }
+    stages {
+        stage("git clone") {
+            steps {
+                git branch: 'main', url: 'https://github.com/spoorthibk75/Deploying-Carvilla-app.git'
+            }
+        }
+        stage("docker build") {
+            steps {
+                sh 'docker build -t spoorthibk/car ./carvilla-v1.0'
+            }
+        }
+        stage("docker container") {
+            steps {
+                sh 'docker run -d -p 8083:80 --name con3 spoorthibk/car'
+            }
+        }
+        stage("docker login") {
+            steps {
+                sh 'echo "$DOCKER_CRE_PSW" | docker login -u "$DOCKER_CRE_USR" --password-stdin'
+            }
+        }
+        stage("docker push") {
+            steps {
+                sh 'docker push spoorthibk/car'
+            }
+        }
+    }
+}
